@@ -66,4 +66,6 @@ def dilate_mito(mito_path, output_path, dilate_type='ball', dilate_size=3):
 
 mito_path = f'/media/liushuo/data1/data/synapse_seg/p545/mito/p545_mito_dilated.mrc'
 output_path = f'/media/liushuo/data1/data/synapse_seg/p545/mito/p545_mito_label.mrc'
-dilate_mito(mito_path, output_path, dilate_type='cube', dilate_size=5)
+
+if __name__ == "__main__":
+    dilate_mito(mito_path, output_path, dilate_type='cube', dilate_size=5)
