@@ -137,7 +137,11 @@ def main():
         vesicle_memb_mask
     )
 
-    # Step 8: Save labeled protein instances
+    # Step 8: Remove protein voxels on vesicle membrane and relabel
+    vesicle_protein_label[vesicle_memb_mask != 0] = 0
+    vesicle_protein_label = label(vesicle_protein_label > 0, connectivity=1)
+
+    # Step 9: Save labeled protein instances
     save_tomo(
         vesicle_protein_label.astype(np.int16),
         vesicle_protein_label_save_path,
