@@ -113,7 +113,7 @@ def main():
         '/media/liushuo/data1/data/synapse_seg/pp3266/pp3266_vesicle_protein_label.mrc'
     )
     vesicle_label_path = (
-        '/media/liushuo/data1/data/synapse_seg/pp3266/pp3266_vesicle_label.mrc'
+        '/media/liushuo/data1/data/synapse_seg/pp3266/vesicle/pp3266_vesicle_label.mrc'
     )
     connector_label_save_path = (
         '/media/liushuo/data1/data/synapse_seg/pp3266/pp3266_connector_label.mrc'
@@ -128,15 +128,15 @@ def main():
     connector_label = find_connector_proteins(
         vesicle_protein_label,
         vesicle_label,
-        dilation_radius=5
+        dilation_radius=4
     )
 
     print(f'Saving connector label: {connector_label_save_path}')
     save_tomo(
-        connector_label.astype(np.int32),
+        connector_label.astype(np.int16),
         connector_label_save_path,
         voxel_size=17.14,
-        datetype=np.int32
+        datetype=np.int16
     )
 
     connector_ids = np.unique(connector_label)

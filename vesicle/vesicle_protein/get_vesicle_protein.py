@@ -89,23 +89,23 @@ def main():
     tomo_data = get_tomo(tomo_path)
     mask_data = get_tomo(mask_path)
 
-    # Step 1: Extract protein probability
-    protein_pro = extract_all_protein(tomo_data, method='Meijering')  # You can choose 'Frangi', 'Sato' or 'Meijering' as well
+    # # Step 1: Extract protein probability
+    # protein_pro = extract_all_protein(tomo_data, method='Meijering')  # You can choose 'Frangi', 'Sato' or 'Meijering' as well
 
-    # Save probability map if needed
-    save_tomo(
-        protein_pro.astype(np.float32),
-        protein_pro_save_path,
-        voxel_size=17.14,
-        datetype=np.float32
-    )
+    # # Save probability map if needed
+    # save_tomo(
+    #     protein_pro.astype(np.float32),
+    #     protein_pro_save_path,
+    #     voxel_size=17.14,
+    #     datetype=np.float32
+    # )
 
     # Step 2: Threshold to binary protein mask
     
     
     # # 2.1 if precomputed protein exist, Load precomputed protein probability map
-    # protein_pro_path = f'/media/liushuo/data1/data/synapse_seg/pp3266/pp3266_protein_prob.mrc'
-    # protein_pro = get_tomo(protein_pro_path)
+    protein_pro_path = f'/media/liushuo/data1/data/synapse_seg/pp3266/pp3266_protein_prob.mrc'
+    protein_pro = get_tomo(protein_pro_path)
     
     protein_mask = np.zeros_like(protein_pro, dtype=np.uint8)
     # frange 0.0008 sato 0.15
