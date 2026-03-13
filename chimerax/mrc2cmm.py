@@ -41,11 +41,11 @@ def convert_mrc_to_cmm(mrc_path, cmm_output_path, scale_factor=17.14):
 #     #     convert_mrc_to_cmm(mrc_path, cmm_output_path)
     
     # # 示例使用
-mrc_path = '/media/liushuo/data1/data/fig_demo_2/pp199/synapse_seg/pp199/er/psd_area.mrc'  # 替换为实际的 MRC 文件路径
+mrc_path = '/media/liushuo/data2/data/xyn_demo/type2.mrc'  # 替换为实际的 MRC 文件路径
 cmm_output_path = mrc_path.replace('.mrc', '.cmm')  # 替换为输出的 CMM 文件路径
 # cmm_output_path = '/media/liushuo/data1/data/fig_demo_2/p255/membrane/keypoints.cmm'  # 替换为输出的 CMM 文件路径
 
-convert_mrc_to_cmm(mrc_path, cmm_output_path, scale_factor=17.14)
+convert_mrc_to_cmm(mrc_path, cmm_output_path, scale_factor=18.12)
 
 
 

@@ -16,7 +16,8 @@ def find_hidden_files(root_path):
 
     for dirpath, dirnames, filenames in os.walk(root_path):
         for name in filenames:
-            if name.endswith('.mrc~') or name.endswith('.rec~') or name.endswith('.ali~'):
+            # if name.endswith('.mrc~') or name.endswith('.rec~') or name.endswith('.ali~'):
+            if name.endswith('~'):
             # if name.endswith('bak.mrc') or name.endswith('ori.mrc'):
                 file_path = Path(dirpath) / name
                 try:
@@ -45,7 +46,7 @@ def export_to_excel(data, output_path):
 
 def main():
     # 从用户输入获取目标路径
-    root = f'/share/data/CryoET_Data/chongli'
+    root = f'/share/data/CryoET_Data/synapse'
     if not root:
         print('路径不能为空。')
         return
@@ -58,7 +59,7 @@ def main():
 
     # 确定输出文件名
     # output_file = Path(root) / 'wait_to_remove.xlsx'
-    output_file = Path('/share/data/CryoET_Data/liushuo/chongli_wait_to_remove.xlsx')
+    output_file = Path('/home/liushuo/Documents/data/synapse_wait_to_remove.xlsx')
 
     # 导出为 Excel
     try:

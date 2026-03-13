@@ -7,6 +7,7 @@ def invert_and_save_mrc(input_file, output_file, voxel_size=17.14):
         
         # 获取原始图像数据
         image_data = -mrc.data.astype(np.float32)
+        voxel_size = mrc.voxel_size
       
     
     int8_image = (image_data - image_data.min()) / (image_data.max() - image_data.min()) * 127
@@ -40,11 +41,11 @@ def invert_and_save_mrc_float32(input_file, output_file, voxel_size=17.14):
 # output_file = f'/media/liushuo/data1/data/tcl_demo/{base_name}/{base_name}_reverse_uint8.mrc'  # 替换为实际输出文件路径
 
 # base_name = 'p287'
-input_file = f'/share/data/CryoET_Data/synapse/synapse2015/20150729-g1b3_20130828/stack-out/pp472/ves_seg/pp472_wbp_corrected.mrc'  # 替换为实际输入文件路径
+input_file = f'/share/data/CryoET_Data/liushuo/dataset/IsoNet2/liucong_in_tissue/corrected_tomos/_isonet2-n2n_unet-medium_TS_173_10.96Apx.mrc'  # 替换为实际输入文件路径
 # output_file = f'/media/liushuo/data1/data/fig_demo_2/pp235/pp235-bin4-5i_reverse.mrc'  # 替换为实际输出文件路径
 output_file = input_file.replace('.mrc', '_reverse.mrc')  # 替换为输出的 MRC 文件路径
 
-invert_and_save_mrc(input_file, output_file, voxel_size=17.14)
+invert_and_save_mrc(input_file, output_file)
 
 # base_names = ['p90', 'p218', 'p260']
 # working_dir = '/media/liushuo/data1/data/fig_demo_2/'

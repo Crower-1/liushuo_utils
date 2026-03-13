@@ -2,7 +2,7 @@ import os
 import argparse
 import numpy as np
 import mrcfile
-from scipy.ndimage import zoom
+from scipy.ndimage import binary_dilation, zoom
 
 from mrc.io import get_tomo, save_tomo
 
@@ -31,10 +31,15 @@ def resample_label(input_path, output_path, target_shape, voxel_size=None, dtype
     # 计算缩放因子
     zoom_factors = tgt_shape / src_shape
 
-    # 最近邻插值（order=0）
-    data_rs = zoom(data, zoom_factors, order=0)
+    data_dilated = binary_dilation(
+        data > 0,
+        iterations=1
+    )
 
-    save_tomo(data_rs, output_path, voxel_size, datetype=dtype)
+    # 最近邻插值（order=0）
+    data_dilated_rs = zoom(data_dilated, zoom_factors, order=0)
+
+    save_tomo(data_dilated_rs, output_path, voxel_size, datetype=dtype)
     print(f"Resampled from {tuple(src_shape)} → {tuple(tgt_shape)}, saved to {output_path}")
 
 # def parse_args():
@@ -49,9 +54,9 @@ def resample_label(input_path, output_path, target_shape, voxel_size=None, dtype
 if __name__ == '__main__':
     # args = parse_args()
     # 解析目标尺寸
-    target_shape = (403, 747, 747)
-    input_path = '/media/liushuo/data1/data/CET-MAP/actin/10002/00012/Reconstructions/VoxelSpacing13.800/Annotations/100/actin_ground_truth-1.0_segmentationmask.mrc'
-    output_path = '/media/liushuo/data1/data/CET-MAP/actin/10002/00012/Reconstructions/VoxelSpacing13.800/Annotations/100/00012_resample_label.mrc'
+    target_shape = (492, 730, 730)
+    input_path = '/media/liushuo/data1/data/CET-MAP/actin/10002/00004/Reconstructions/VoxelSpacing13.480/Annotations/100/actin_ground_truth-1.0_segmentationmask.mrc'
+    output_path = '/media/liushuo/data1/data/CET-MAP/actin/10002/00004/Reconstructions/VoxelSpacing13.480/Annotations/100/00004_resample_label.mrc'
     # 将 dtype 名称转换为 numpy dtype
     # dtype = getattr(np, args.dtype)
     resample_label(input_path, output_path, target_shape, voxel_size=17.14)

@@ -106,16 +106,18 @@ def extract_actin(tomo_path):
     save_tomo(mask_actin, actin_path)
 
     
-tomo_path = f"/media/liushuo/data1/data/synapse_seg/pp463/ret1_10tomo.mrc"
+tomo_path = f"/media/liushuo/data1/data/CET-MAP/Candida_glabrata/emd_45106/synapse_seg/emd_45106_semantic_label.mrc"
 # extract_er(tomo_path)
 # extract_mito(tomo_path)
 # extract_MT(tomo_path)
 # extract_memb(tomo_path)
 # extract_vesicle(tomo_path)
-extract_actin(tomo_path)
+# extract_actin(tomo_path)
+
+
 
 # tomo_path = f"/media/liushuo/data1/data/fig_demo_2/pp3972/ret1.mrc"
-# extract_sp_id(tomo_path, f"/media/liushuo/data1/data/fig_demo_2/pp199/synapse_seg/pp199/er/pp199_er_memb_label.mrc", 150)
+extract_sp_id(tomo_path, f"/media/liushuo/data1/data/CET-MAP/Candida_glabrata/emd_45106/synapse_seg/er/er_memb.mrc", 10)
     
 # tomo_path = f"/media/liushuo/data1/data/fig_demo_2/p184/ret1_crop.mrc"
 # memb_output_path = f"/media/liushuo/data1/data/fig_demo_2/p184/mt/mt.mrc"
