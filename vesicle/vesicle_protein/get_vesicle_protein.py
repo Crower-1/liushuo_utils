@@ -1,7 +1,7 @@
 from mrc.io import get_tomo, save_tomo
 import numpy as np
 from skimage.filters import frangi, sato, meijering
-from skimage.morphology import dilation, ball, cube
+from skimage.morphology import dilation, ball
 from skimage.measure import label
 
 
@@ -60,6 +60,21 @@ def keep_instances_intersecting_mask(instance_label: np.ndarray,
     kept_label = id_map[kept_label]
 
     return kept_label
+
+
+def build_vesicle_protein_region(mask_data: np.ndarray,
+                                 dilation_radius: int = 7) -> np.ndarray:
+    """
+    Build the candidate region for vesicle-associated proteins by dilating the
+    vesicle membrane and excluding the vesicle lumen/body label.
+    """
+    vesicle_memb_mask = np.zeros_like(mask_data, dtype=np.uint8)
+    vesicle_memb_mask[mask_data == 9] = 1
+
+    vesicle_protein_region = dilation(vesicle_memb_mask, ball(dilation_radius))
+    vesicle_protein_region[mask_data == 4] = 0
+
+    return vesicle_memb_mask, vesicle_protein_region
     
     
 def main():
@@ -96,20 +111,22 @@ def main():
     # frange 0.0008 sato 0.15
     protein_mask[protein_pro > 0.15] = 1
 
-    # Step 3: Vesicle membrane mask
-    vesicle_memb_mask = np.zeros_like(mask_data, dtype=np.uint8)
-    vesicle_memb_mask[mask_data == 9] = 1
+    # Step 3: Vesicle membrane mask and retained vesicle-protein region
+    vesicle_memb_mask, vesicle_protein_region = build_vesicle_protein_region(
+        mask_data,
+        dilation_radius=7
+    )
 
-    # Step 4: Non-vesicle region mask
-    non_vesicle_protein_mask = np.zeros_like(protein_mask, dtype=np.uint8)
-    non_vesicle_protein_mask[(mask_data != 0) & (mask_data != 9) & (mask_data != 4)] = 1
-
-    # Dilate non-vesicle mask
+    # Step 4: Legacy non-vesicle region filtering, kept here only for reference
+    # non_vesicle_protein_mask = np.zeros_like(protein_mask, dtype=np.uint8)
+    # non_vesicle_protein_mask[(mask_data != 0) & (mask_data != 9) & (mask_data != 4)] = 1
     # non_vesicle_protein_mask = dilation(non_vesicle_protein_mask, cube(5))
 
-    # Step 5: Remove proteins in non-vesicle region
+    # Step 5: Keep proteins only inside the retained vesicle-protein region
     vesicle_protein_mask = np.zeros_like(protein_mask, dtype=np.uint8)
-    vesicle_protein_mask[(protein_mask == 1) & (non_vesicle_protein_mask == 0)] = 1
+    vesicle_protein_mask[
+        (protein_mask == 1) & (vesicle_protein_region > 0)
+    ] = 1
 
     # Step 6: Label connected components as independent instances
     vesicle_protein_label = label(vesicle_protein_mask, connectivity=1)
