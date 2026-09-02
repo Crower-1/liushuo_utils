@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import mrcfile
 import numpy as np
@@ -44,20 +44,24 @@ def save_stack(path: str, data: np.ndarray, voxel_size) -> None:
 
 
 def process_pair(
-    ali_path: str,
+    stack_path: str,
     tlt_path: str,
-    xtilt_path: str,
-    tilt_com_path: str,
+    xtilt_path: Optional[str],
+    tilt_com_path: Optional[str],
     output_root: str,
 ) -> None:
-    base_name = os.path.splitext(os.path.basename(ali_path))[0]
+    base_name = os.path.splitext(os.path.basename(stack_path))[0]
 
-    with mrcfile.open(ali_path, permissive=True) as mrc:
+    with mrcfile.open(stack_path, permissive=True) as mrc:
         data = np.copy(mrc.data)
         voxel_size = mrc.voxel_size
 
     angles = read_tilt_angles(tlt_path)
-    xtilt_angles = read_tilt_angles(xtilt_path)
+    if xtilt_path:
+        xtilt_angles = read_tilt_angles(xtilt_path)
+    else:
+        xtilt_angles = [0.0] * len(angles)
+        print(f"Info: {base_name}.xtilt not found, using 0.0 for all xtilt angles.")
 
     if len(angles) != data.shape[0] or len(xtilt_angles) != data.shape[0]:
         print(
@@ -91,39 +95,50 @@ def process_pair(
     save_stack(odd_ali, odd_data, voxel_size)
     write_tilt_angles(odd_tlt, odd_angles)
     write_tilt_angles(odd_xtilt, odd_xtilt_angles)
-    shutil.copyfile(tilt_com_path, odd_tilt_com)
+    if tilt_com_path:
+        shutil.copyfile(tilt_com_path, odd_tilt_com)
 
     save_stack(even_ali, even_data, voxel_size)
     write_tilt_angles(even_tlt, even_angles)
     write_tilt_angles(even_xtilt, even_xtilt_angles)
-    shutil.copyfile(tilt_com_path, even_tilt_com)
+    if tilt_com_path:
+        shutil.copyfile(tilt_com_path, even_tilt_com)
 
     print(
         f"Processed {base_name}: odd frames -> {odd_ali}, even frames -> {even_ali}"
     )
 
 
-def find_pairs(input_dir: str) -> List[Tuple[str, str, str, str]]:
-    pairs: List[Tuple[str, str, str, str]] = []
+def find_pairs(input_dir: str) -> List[Tuple[str, str, Optional[str], Optional[str]]]:
+    pairs: List[Tuple[str, str, Optional[str], Optional[str]]] = []
+    seen_bases = set()
     for entry in sorted(os.listdir(input_dir)):
-        if not entry.lower().endswith(".ali"):
+        if not entry.lower().endswith((".ali", ".mrc")):
             continue
         base = os.path.splitext(entry)[0]
-        ali_path = os.path.join(input_dir, entry)
+        if base in seen_bases:
+            print(
+                f"Skipping {entry}: duplicated stack base name '{base}', "
+                "already matched by another stack file."
+            )
+            continue
+        stack_path = os.path.join(input_dir, entry)
         tlt_path = os.path.join(input_dir, f"{base}.tlt")
         xtilt_path = os.path.join(input_dir, f"{base}.xtilt")
         tilt_com_path = os.path.join(input_dir, f"{base}_tilt.com")
-        missing = []
         if not os.path.isfile(tlt_path):
-            missing.append(f"{base}.tlt")
-        if not os.path.isfile(xtilt_path):
-            missing.append(f"{base}.xtilt")
-        if not os.path.isfile(tilt_com_path):
-            missing.append(f"{base}_tilt.com")
-        if missing:
-            print(f"Skipping {entry}: missing {', '.join(missing)}")
+            print(f"Skipping {entry}: missing {base}.tlt")
             continue
-        pairs.append((ali_path, tlt_path, xtilt_path, tilt_com_path))
+
+        matched_xtilt = xtilt_path if os.path.isfile(xtilt_path) else None
+        matched_tilt_com = tilt_com_path if os.path.isfile(tilt_com_path) else None
+        if not matched_tilt_com:
+            fallback_tilt_com = os.path.join(input_dir, "tilt.com")
+            if os.path.isfile(fallback_tilt_com):
+                matched_tilt_com = fallback_tilt_com
+
+        pairs.append((stack_path, tlt_path, matched_xtilt, matched_tilt_com))
+        seen_bases.add(base)
     return pairs
 
 
@@ -134,7 +149,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "input_dir",
         help=(
-            "Directory containing RAW_ALI_DATA. Expects <name>.ali, <name>.tlt, and <name>.xtilt."
+            "Directory containing RAW_ALI_DATA. Expects <name>.ali/.mrc and <name>.tlt "
+            "(<name>.xtilt and <name>_tilt.com are optional)."
         ),
     )
     return parser.parse_args()
@@ -149,11 +165,11 @@ def main() -> None:
 
     pairs = find_pairs(input_dir)
     if not pairs:
-        print("No ali/tlt/xtilt triplets found.")
+        print("No stack/tlt pairs found.")
         return
 
-    for ali_path, tlt_path, xtilt_path, tilt_com_path in pairs:
-        process_pair(ali_path, tlt_path, xtilt_path, tilt_com_path, input_dir)
+    for stack_path, tlt_path, xtilt_path, tilt_com_path in pairs:
+        process_pair(stack_path, tlt_path, xtilt_path, tilt_com_path, input_dir)
 
 
 if __name__ == "__main__":

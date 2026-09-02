@@ -35,9 +35,9 @@ def extract_cube_with_center(tomo_path, output_path, center, size=64):
     
 if __name__ == "__main__":
     # Example usage
-    tomo_path = '/media/liushuo/data1/data/fig_demo_2/pp370/cage.mrc'  # Replace with your MRC file path
-    output_path = '/media/liushuo/data1/data/fig_demo_2/pp370/cage_2175.mrc'  # Replace with your desired output path
+    tomo_path = '/media/liushuo/data1/data/synapse_seg/pp3266/pp3266.mrc'  # Replace with your MRC file path
+    output_path = '/media/liushuo/data1/data/synapse_seg/pp3266/pp3266_cube.mrc'  # Replace with your desired output path
     center = (124, 661, 604)  # Replace with your desired center coordinates
-    size = 64  # Size of the cube to extract
+    size = 128  # Size of the cube to extract
 
     extract_cube_with_center(tomo_path, output_path, center, size)

@@ -2,6 +2,7 @@ import multiprocessing as mp
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from collections import defaultdict
+from typing import Optional
 
 import numpy as np
 from skimage.morphology import ball, dilation
@@ -33,8 +34,8 @@ def _print_progress(done: int, total: int) -> None:
 
 def find_connector_proteins(vesicle_protein_label: np.ndarray,
                             vesicle_label: np.ndarray,
-                            dilation_radius: int = 5,
-                            max_workers: int | None = None) -> np.ndarray:
+                            dilation_radius: int = 2,
+                            max_workers: Optional[int] = None) -> np.ndarray:
     """
     Keep protein instances that intersect with at least two dilated vesicle
     instances. Protein instance IDs are preserved in the output.
@@ -128,7 +129,7 @@ def main():
     connector_label = find_connector_proteins(
         vesicle_protein_label,
         vesicle_label,
-        dilation_radius=4
+        dilation_radius=2
     )
 
     print(f'Saving connector label: {connector_label_save_path}')

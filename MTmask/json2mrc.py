@@ -2,7 +2,6 @@ import os
 import json
 import numpy as np
 import mrcfile as mf
-from skimage.morphology import cube, dilation, ball
 
 
 def calculate_bounds(coord1, coord2, margin, lower_bound, upper_bound):
@@ -12,21 +11,18 @@ def calculate_bounds(coord1, coord2, margin, lower_bound, upper_bound):
     return min_val, max_val
 
 
-def generate_MT_mask(label_data, points, radius=8):
+def generate_MT_mask(masks, points, mt_id, radius=8):
     """
-    通过连接一系列点生成一个二值mask，表示微管。
+    通过连接一系列点直接写入微管到全局mask。
 
     Args:
-        label_data (np.ndarray): 用于定义mask形状的3D标签数据数组。
+        masks (np.ndarray): 全局3D标签mask数组。
         points (list of list or np.ndarray): 每个点由 [z, y, x] 表示的列表。
+        mt_id (int): 当前微管的标签值。
         radius (int, optional): 圆柱形微管的半径。默认值为8。
-
-    Returns:
-        np.ndarray: 一个二值mask，其中微管表示为1。
     """
-    # 获取label_data的维度
-    nz, ny, nx = label_data.shape
-    mask = np.zeros((nz, ny, nx), dtype=np.uint8)
+    # 获取mask的维度
+    nz, ny, nx = masks.shape
     points = np.array(points, dtype=np.float32)
 
     for i in range(len(points) - 1):
@@ -79,11 +75,9 @@ def generate_MT_mask(label_data, points, radius=8):
         valid_points |= start_points_within_radius
         valid_points |= end_points_within_radius
 
-        # 标记有效点到mask
+        # 直接标记有效点到全局mask
         valid_grid_points = grid_points[valid_points].astype(np.int32)
-        mask[valid_grid_points[:, 0], valid_grid_points[:, 1], valid_grid_points[:, 2]] = 1
-
-    return mask
+        masks[valid_grid_points[:, 0], valid_grid_points[:, 1], valid_grid_points[:, 2]] = mt_id
 
 
 def process_mt_to_mask(json_path, output_path):
@@ -95,31 +89,23 @@ def process_mt_to_mask(json_path, output_path):
     # 提取tomo_name和MRC文件路径
     tomo_name = os.path.splitext(os.path.basename(json_path))[0]
     tomo_name = tomo_name.replace("_point", "")
-    mrc_path = '/media/liushuo/data1/data/synapse_seg/pp463/Prediction/MT/center_distance_map.mrc'
+    mrc_path = '/media/liushuo/data1/data/synapse_seg/pp0312/pp0312.mrc'
 
     # 2. 读取MRC文件以获取z, y, x维度
     with mf.open(mrc_path, permissive=True) as mrc:
         z, y, x = mrc.data.shape
-        voxel_size = mrc.voxel_size
 
     # 3. 创建一个大小为 (z, y, x) 的全零数组，类型为int16
     masks = np.zeros((z, y, x), dtype=np.int16)
 
-    # 4. 处理每个mt，生成局部mask，并合并到全局mask中
+    # 4. 处理每个mt，直接写入全局mask
     for mt in mts:
         mt_id = mt["id"]
         print(f"Processing mt {mt_id}...")
         seedlist = mt["points"]  # points 是 (z, y, x) 的列表
 
-        # 生成当前mt的二值mask
-        local_mask_binary = generate_MT_mask(masks, seedlist, radius=8)
-
-        # 创建当前mt的mask，值为mt_id
-        local_mask = local_mask_binary * mt_id
-
-        # 合并当前mt的mask到全局mask中
-        # 使用 np.where 优先保留已有的mt_id，或者覆盖（根据需求调整）
-        masks = np.where(local_mask > 0, local_mask, masks)
+        # 直接写入当前mt到全局mask（覆盖语义与原 np.where 一致）
+        generate_MT_mask(masks, seedlist, mt_id, radius=8)
 
     # # 5. 保存mask为MRC文件
     # output_path = os.path.join(os.path.dirname(json_path), f"{tomo_name}_mt_label.mrc")
@@ -132,6 +118,6 @@ def process_mt_to_mask(json_path, output_path):
 
 
 # 示例调用
-json_path = f'/media/liushuo/data1/data/synapse_seg/pp463/Prediction/MT/mt_point.json'
-output_path = f'/media/liushuo/data1/data/synapse_seg/pp463/Prediction/MT/mt_label.mrc'
+json_path = f'/media/liushuo/data1/data/synapse_seg/pp0312/mt/segfiber/synapse_seg_points.json'
+output_path = f'/media/liushuo/data1/data/synapse_seg/pp0312/mt/segfiber/mt_label_new.mrc'
 process_mt_to_mask(json_path, output_path)

@@ -41,7 +41,7 @@ def invert_and_save_mrc_float32(input_file, output_file, voxel_size=17.14):
 # output_file = f'/media/liushuo/data1/data/tcl_demo/{base_name}/{base_name}_reverse_uint8.mrc'  # 替换为实际输出文件路径
 
 # base_name = 'p287'
-input_file = f'/share/data/CryoET_Data/liushuo/dataset/IsoNet2/liucong_in_tissue/corrected_tomos/_isonet2-n2n_unet-medium_TS_173_10.96Apx.mrc'  # 替换为实际输入文件路径
+input_file = f'/media/liushuo/data1/data/DNA/p78/Position_78_corrected.mrc'  # 替换为实际输入文件路径
 # output_file = f'/media/liushuo/data1/data/fig_demo_2/pp235/pp235-bin4-5i_reverse.mrc'  # 替换为实际输出文件路径
 output_file = input_file.replace('.mrc', '_reverse.mrc')  # 替换为输出的 MRC 文件路径
 
