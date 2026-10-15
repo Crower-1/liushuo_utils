@@ -4,3 +4,8 @@ __pycache__/
 *.pyd
 *.swp
 *.swo
+
+# Generated vesicle summaries and ChimeraX rendering outputs
+/vesicle/sv_group_summary/outputs/
+render_vesicle/
+render_vesicle_shape/
